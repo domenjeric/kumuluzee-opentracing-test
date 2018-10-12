@@ -1,0 +1,9 @@
+tracer-config:
+  selected-tracer: jaeger
+  available-tracers:
+    jaeger:
+      reporter_host: localhost
+      reporter_port: 5775
+    zipkin:
+      reporter_host: localhost
+      reporter_port: 9411
