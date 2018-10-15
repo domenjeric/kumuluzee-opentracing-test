@@ -27,7 +27,8 @@ public class TracedInterceptor {
                     .asChildOf(parentSpan)
                     .withTag("app.className", context.getTarget().getClass().getSuperclass().getName())
                     .withTag("app.methodName", method.getName())
-                    .start();
+                    .startActive(true)
+                    .span();
 
             Object toReturn = context.proceed();
 

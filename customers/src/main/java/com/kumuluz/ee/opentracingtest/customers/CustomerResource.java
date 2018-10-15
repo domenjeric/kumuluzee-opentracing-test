@@ -1,6 +1,7 @@
 package com.kumuluz.ee.opentracingtest.customers;
 
 
+import com.kumuluz.ee.opentracingtest.tracing.Traced;
 import io.opentracing.Tracer;
 import io.opentracing.propagation.Format;
 import io.opentracing.tag.Tags;
@@ -9,20 +10,16 @@ import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 
-import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
 import java.util.List;
 
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 @Path("customers")
+@Traced
 public class CustomerResource {
-
-    @Inject
-    private TestBean testBean;
 
     @GET
     public Response getAllCustomers() {
@@ -56,12 +53,12 @@ public class CustomerResource {
     @Path("{customerId}/orders")
     public Response getCustomerOrders(@PathParam("customerId") String customerId) {
 
-        //Just to test tracing
-        testBean.justTesting();
+        Tracer tracer = GlobalTracer.get();
 
         try {
+            tracer.activeSpan().log("Trying to send request to orders");
+
             OkHttpClient client = new OkHttpClient();
-            Tracer tracer = GlobalTracer.get();
             HttpUrl url = new HttpUrl.Builder()
                     .scheme("http")
                     .host("localhost")
@@ -82,12 +79,17 @@ public class CustomerResource {
             okhttp3.Response response = client.newCall(request).execute();
 
             if (response.code() != 200) {
-                throw new RuntimeException("Response error: " + response);
+                tracer.activeSpan().setTag(Tags.ERROR.getKey(), "Response error: " + response);
+                tracer.activeSpan().log("Response error: " + response);
+                return Response.serverError().build();
             }
 
+            tracer.activeSpan().log("Success!");
             return Response.ok(response.body().string()).build();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            tracer.activeSpan().setTag(Tags.ERROR.getKey(), e.getMessage());
+            tracer.activeSpan().log("Response error: " + e.getMessage());
+            return Response.serverError().build();
         }
     }
 
