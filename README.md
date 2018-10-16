@@ -5,7 +5,7 @@
 
 1. Run Jaeger via Docker:
 ```sh
-docker run -d -p 5775:5775/udp -p 16686:16686 jaegertracing/all-in-one:latest
+$ docker run -d -p 5775:5775/udp -p 16686:16686 jaegertracing/all-in-one:latest
 ```
 
 2. Build using maven:
@@ -26,4 +26,10 @@ $ PORT=3001 java -jar orders/target/orders-1.0-SNAPSHOT.jar
 
 5. View traces in Jaeger console
    <http://localhost:16686>
+   
+   
+   
+## Screenshots
+![Jaeger console](screenshots/screenshot1.png)
 
+![Jaeger console](screenshots/screenshot2.png)
